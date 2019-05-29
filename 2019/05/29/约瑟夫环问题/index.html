@@ -4,8 +4,6 @@
 
 
 
-  
-
 
 
 
@@ -22,7 +20,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
   <meta name="renderer" content="webkit">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" , user-scalable="no"">
-  <title>Tag: 数据结构裸奔の蜗牛</title>
+  <title>约瑟夫环问题裸奔の蜗牛</title>
   <link rel="shortcut icon" href="https://gss2.bdstatic.com/-fo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike272%2C5%2C5%2C272%2C90/sign=99446b550846f21fdd395601974d0005/3b87e950352ac65c5eb643ddf9f2b21192138ae8.jpg">
   
     
@@ -110,54 +108,193 @@
                 </nav>
             </header>
                 
-<header class="blog-post-page-title blog-search-page-title">
-  <h4>标签<a href>数据结构</a>下的文章</h4>
+<header class="blog-post-page-title">
+    <h4>约瑟夫环问题</h4>
+    <time datetime="2019-05-29T09:20:34.000Z"><i class="fa fa-clock-o"></i>2019-05-29</time>
+    
+    
+    
+    
+	
+        <span><i class="fa fa-folder-o"></i>
+    		
+    	       <a href="/categories/数据结构预算法/" rel="categories" data-toggle="tooltip" data-placement="top" title="Linux">数据结构预算法</a>
+    		
+        </span>
+	
+    
 </header>
 <div class="blog-main-post blog-post-page-box">
-  
-    <article class="blog-post-block">
-        
-        <header>
-            <div class="blog-post-block-img">
-                <img src="/images/约瑟夫环1.jpeg" alt>
-            </div>
-        </header>
-        
-        <div class="blog-post-block-padding">
-          
-            <a href="/2019/05/29/约瑟夫环问题/">约瑟夫环问题</a>
-          
-            <section>
-              
-                
-                问题描述已知n个人围坐在一张圆桌周围，从编号为k的人开始报数，数到m的那个人出列；他的下一个人又从1开始报数，数到m的那个人又出列，以此类推重复下去，知道圆桌周围的人剩下最后一个，求最后剩下的那个人的初始编号。
-数组解法改问题可以理解成一个数组，用代码表示如下
-                ...
-              
-            </section>
-            <footer>
-                <time datetime="2019-05-29T09:20:34.000Z><i class=" fa fa-clock-o">2019-05-29</time>
-                
-                
-                
-                
-                  <span><i class="fa fa-folder-o"></i>
-                    
-                      <a href="/categories/数据结构预算法/" itemprop="url" rel="index">
-                        数据结构预算法
-                      </a>
-                    
-                  </span>
-                
-            </footer>
-        </div>
-    </article>
-  
-    
-    <nav id="pagination" class="blog-pagination">
-            <span class="page-number current">1</span>
-    </nav>
+    <article class="blog-post-block blog-post-page-content">
+        <section>
+            
+                <h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>已知n个人围坐在一张圆桌周围，从编号为k的人开始报数，数到m的那个人出列；他的下一个人又从1开始报数，数到m的那个人又出列，以此类推重复下去，知道圆桌周围的人剩下最后一个，求最后剩下的那个人的初始编号。</p>
+<h3 id="数组解法"><a href="#数组解法" class="headerlink" title="数组解法"></a>数组解法</h3><p>改问题可以理解成一个数组，用代码表示如下：</p>
+<pre><code class="php">function findKing($n, $m) {
+  $num = 0;
+  $arr = range(1, $n);
+  while(count($arr) != 1){
+      foreach($arr as $k =&gt; $v){
+          if($num == 2){
+              unset($arr[$k]);
+              $num = 0;
+          }else{
+              $num++;
+          }
+      }
+  }
+}
+</code></pre>
+<h3 id="数学解决法"><a href="#数学解决法" class="headerlink" title="数学解决法"></a>数学解决法</h3><p><img src="/images/约瑟夫环2.png" alt></p>
+<p>利用数学分析，可以发现其中的规律，用公式表达为：</p>
+<pre><code class="php">f(N,M)=(f(N−1,M)+M)%N
+</code></pre>
+<p>用代码实现如下：</p>
+<pre><code class="php">function findKing($n, $m) {
+    $r = 0;
+    for ($i = 2; $i &lt;= $n; $i++) {
+        $r = ($r + $m) % $i;
+    }
+    return $r + 1;
+}
+</code></pre>
+<h3 id="单向循环链表解法"><a href="#单向循环链表解法" class="headerlink" title="单向循环链表解法"></a>单向循环链表解法</h3><p><img src="/images/约瑟夫环3.jpeg" alt></p>
+<p>我们可能用链表的方法去模拟这个过程，N个人看作是N个链表节点。代码实现待补充。</p>
 
+            
+        </section>
+        <footer class="blog-post-page-tags">
+        
+			
+				
+			<a href="/tags/数据结构/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">数据结构</a>
+				
+			<a href="/tags/算法/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">算法</a>
+				
+			<a href="/tags/约瑟夫环/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">约瑟夫环</a>
+				
+			
+		
+        </footer>
+    </article>
+    <article class="blog-post-page-readmore">
+    	
+    	
+		
+			<a href="/2019/05/29/php利用redis实现session存储/" class="blog-post-page-readmore-prev" data-toggle="tooltip" data-placement="top" title="php利用redis实现session存储">上一篇</a>
+		
+
+		
+		
+
+        <div style="clear: both;"></div>
+    </article>
+
+    <article class="blog-post-block blog-post-page-content">
+            <div class="row">
+            
+                <div class="col-md-4 col-sm-4 post-page-more-btn">
+                    <span class="post-comments-btn btn btn-info btn-block" data-toggle="tooltip" data-placement="top" title="本站采用Disqus评论组件，若您没有科学上网可能会无法查看并评论">加载评论</span>
+                </div>
+            
+                <div class="col-md-4 col-sm-4 post-page-more-btn">
+                    <span data-toggle="modal" data-target="#post-donate-content">
+                        <span id="post-donate-btn" class="btn btn-danger btn-block" data-toggle="tooltip" data-placement="top" title="如果您觉得本文还不错或者对您有帮助，可以考虑打赏一下作者哦">打赏本文</span>
+                    </span>
+                </div>
+                <div class="col-md-4 col-sm-4 post-page-more-btn">
+                    <span data-toggle="modal" data-target="#post-qrcode-content">
+                        <span><span id="post-qrcode-btn" class="btn btn-success btn-block" data-toggle="tooltip" data-placement="top" title="微信扫描二维码手机端查看本文及分享本文">二维码</span></span>
+                    </span>
+                </div>
+            </div>
+        <div class="post-more-function-br"></div>
+
+        <div class="modal fade" id="post-donate-content" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">打赏本文</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row post-donate-content">
+                            <div class="col-md-4">
+                                <p>支付宝</p>
+                                <img class="post-donate-content-img no-lightbox" src="https://github.com/icaohui/icaohui.github.io/blob/master/images/alipay.png?raw=true">
+                            </div>
+                            <div class="col-md-4">
+                                <p>微信</p>
+                                <img class="post-donate-content-img no-lightbox" src="https://github.com/icaohui/icaohui.github.io/blob/master/images/wxpay.png?raw=true">
+                            </div>
+                            <div class="col-md-4">
+                                <p>财付通</p>
+                                <img class="post-donate-content-img no-lightbox" src="https://github.com/icaohui/icaohui.github.io/blob/master/images/qqpay.png?raw=true">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="post-qrcode-content" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">文章二维码</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row post-qrcode-content">
+                            <span class="post-qrcode-content-canvas"></span>
+                            <img class="post-qrcode-content-img no-lightbox" src>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // post QRcode
+            // 中文转码
+            function toUtf8(str) {
+                var out, i, len, c;
+                out = "";
+                len = str.length;
+                for (i = 0; i < len; i++) {
+                    c = str.charCodeAt(i);
+                    if ((c >= 0x0001) && (c <= 0x007F)) {
+                        out += str.charAt(i);
+                    } else if (c > 0x07FF) {
+                        out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+                        out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F));
+                        out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                    } else {
+                        out += String.fromCharCode(0xC0 | ((c >> 6) & 0x1F));
+                        out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                    }
+                }
+                return out;
+            }
+            // 生成
+            var qrcode= $('.post-qrcode-content-canvas').qrcode({width: 150,height: 150,text: toUtf8("http://icaohui.top/2019/05/29/约瑟夫环问题/")}).hide();
+            var canvas=qrcode.find('canvas').get(0);
+            $('.post-qrcode-content-img').attr('src',canvas.toDataURL('image/jpg'));
+        </script>
+
+        
+    </article>
+    
 </div>
 
                 
