@@ -20,7 +20,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
   <meta name="renderer" content="webkit">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" , user-scalable="no"">
-  <title>php利用redis实现session存储裸奔の蜗牛</title>
+  <title>Nginx反向代理获取用户真实IP裸奔の蜗牛</title>
   <link rel="shortcut icon" href="https://gss2.bdstatic.com/-fo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike272%2C5%2C5%2C272%2C90/sign=99446b550846f21fdd395601974d0005/3b87e950352ac65c5eb643ddf9f2b21192138ae8.jpg">
   
     
@@ -109,13 +109,13 @@
             </header>
                 
 <header class="blog-post-page-title">
-    <h4>php利用redis实现session存储</h4>
-    <time datetime="2019-05-29T09:20:34.000Z"><i class="fa fa-clock-o"></i>2019-05-29</time>
+    <h4>Nginx反向代理获取用户真实IP</h4>
+    <time datetime="2019-06-13T10:13:44.000Z"><i class="fa fa-clock-o"></i>2019-06-13</time>
     
     
     <span>
         <i class="fa fa-eye"></i>
-        <span id="/2019/05/29/php-redis-session/" class="views views-post" title="php利用redis实现session存储"></span>
+        <span id="/2019/06/13/nginxip/" class="views views-post" title="Nginx反向代理获取用户真实IP"></span>
     </span>
     
     
@@ -123,7 +123,7 @@
 	
         <span><i class="fa fa-folder-o"></i>
     		
-    	       <a href="/categories/php/" rel="categories" data-toggle="tooltip" data-placement="top" title="Linux">php</a>
+    	       <a href="/categories/nginx/" rel="categories" data-toggle="tooltip" data-placement="top" title="Linux">nginx</a>
     		
         </span>
 	
@@ -133,135 +133,71 @@
     <article class="blog-post-block blog-post-page-content">
         <section>
             
-                <h3 id="安装redis扩展"><a href="#安装redis扩展" class="headerlink" title="安装redis扩展"></a>安装redis扩展</h3><p>安装redis扩展之前需要安装php-dev模块提供phpize，然后使用pecl安装（需安装pecl模块）</p>
-<pre><code class="php">    sudo pecl install redis
+                <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>nginx反向代理后，在应用中取得的ip都是反向代理服务器的ip，取得的域名也是反向代理配置的url的域名，解决该问题，需要在nginx反向代理配置中添加一些配置信息，目的将客户端的真实ip和域名传递到应用程序中。</p>
+<blockquote>
+<p>当多层代理或使用CDN时，如果代理服务器不把用户的真实IP传递下去，那么业务服务器将永远不可能获取到用户的真实IP。</p>
+</blockquote>
+<h3 id="Nginx配置"><a href="#Nginx配置" class="headerlink" title="Nginx配置"></a>Nginx配置</h3><p>nginx反向代理配置时，一般会添加下面的配置：</p>
+<pre><code class="php">proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header REMOTE-HOST $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 </code></pre>
-<p>然后把extension=redis.so加入php.ini即可。当然也可以自行下载源码包编译安装（自行百度）。</p>
-<h3 id="编写实现类"><a href="#编写实现类" class="headerlink" title="编写实现类"></a>编写实现类</h3><p>编写实现类，实现session_set_save_handler函数参数的各个方法。</p>
-<pre><code class="php">class SessionManager
-{
-    /**
-     * redis连接句柄
-     * @var Redis $redis
-     */
-    private $redis;
-    /**
-     * session过期时间，由redis过期时间控制
-     * @var int $expire_time
-     */
-    private $expire_time=60;
-
-    public function __construct(){
-        $this-&gt;redis = new Redis();
-        $this-&gt;redis-&gt;connect(&#39;127.0.0.1&#39;, 6379);
-        //授权
-        $this-&gt;redis-&gt;auth(&quot;123456&quot;);
-        session_set_save_handler(
-            array($this,&quot;open&quot;),
-            array($this,&quot;close&quot;),
-            array($this,&quot;read&quot;),
-            array($this,&quot;write&quot;),
-            array($this,&quot;destroy&quot;),
-            array($this,&quot;gc&quot;)
-        );
-        session_start();
-    }
-
-    /**
-     * 打开session
-     * @return bool
-     */
-    public function open()
-    {
-        return true;
-    }
-
-    /**
-     * 关闭session
-     * @return bool
-     */
-    public function close()
-    {
-        return true;
-    }
-
-    /**
-     * 读取session
-     * @param $id
-     * @return bool|string
-     */
-    public function read($id)
-    {
-        $value = $this-&gt;redis-&gt;get($id);
-        if($value){
-            return $value;
-        }else{
-            return &#39;&#39;;
+<h3 id="定义解析"><a href="#定义解析" class="headerlink" title="定义解析"></a>定义解析</h3><h4 id="remote-addr"><a href="#remote-addr" class="headerlink" title="remote_addr"></a>remote_addr</h4><p>代表客户端的IP，但它的值不是由客户端提供的，而是服务端根据客户端的ip指定的，当你的浏览器访问某个网站时，假设中间没有任何代理，那么网站的web服务器（Nginx，Apache等）就会把remote_addr设为你的机器IP，如果你用了某个代理，那么你的浏览器会先访问这个代理，然后再由这个代理转发到网站，这样web服务器就会把remote_addr设为这台代理机器的IP,除非代理将你的IP附在请求header中一起转交给web服务器。</p>
+<h4 id="X-Forwarded-For（简称XFF）"><a href="#X-Forwarded-For（简称XFF）" class="headerlink" title="X-Forwarded-For（简称XFF）"></a>X-Forwarded-For（简称XFF）</h4><p>X-Forwarded-For 是一个 HTTP 扩展头部。HTTP/1.1（RFC 2616）协议并没有对它的定义，它最开始是由 Squid 这个缓存代理软件引入，用来表示 HTTP 请求端真实 IP。如今它已经成为事实上的标准，被各大 HTTP 代理、负载均衡等转发服务广泛使用，并被写入 <a href="http://tools.ietf.org/html/rfc7239" target="_blank" rel="noopener">RFC 7239</a>（Forwarded HTTP Extension）标准之中。XFF 的内容由「英文逗号 + 空格」隔开的多个部分组成，最开始的是离服务端最远的设备 IP，然后是每一级代理设备的 IP。（注意：如果未经严格处理，可以被伪造）</p>
+<h4 id="X-Real-IP"><a href="#X-Real-IP" class="headerlink" title="X-Real-IP"></a>X-Real-IP</h4><p>这又是一个自定义头部字段，通常被 HTTP 代理用来表示与它产生 TCP 连接的设备 IP，这个设备可能是其他代理，也可能是真正的请求端，这个要看经过代理的层级次数或是是否始终将真实IP一路传下来。（注意：如果未经严格处理，可以被伪造）</p>
+<h3 id="代理情况"><a href="#代理情况" class="headerlink" title="代理情况"></a>代理情况</h3><ul>
+<li>没有使用代理服务器的PHP获取客户端IP情况：<br>REMOTE_ADDR = 客户端IP<br>HTTP_X_FORWARDED_FOR = 没数值或不显示</li>
+<li>用户使用代理或者服务器反向代理（例如Nginx等反向代理）<br>REMOTE_ADDR = 最后一个代理服务器 IP<br>HTTP_X_FORWARDED_FOR = 客户端真实 IP （经过多个代理服务器时，这个值类似：221.5.252.160, 203.98.182.163, 203.129.72.215）<br>这类代理服务器还是将客户端真实的IP发送给了访问对象,无法达到隐藏真实身份的目的.</li>
+<li>使用普通匿名代理服务器的PHP获取客户端IP情况：Anonymous Proxies<br>REMOTE_ADDR = 最后一个代理服务器 IPHTTP_X_FORWARDED_FOR = 代理服务器 IP （经过多个代理服务器时，这个值类似：203.98.182.163, 203.98.182.163, 203.129.72.215），这种情况下隐藏了客户端的真实IP,但是向访问对象透露了客户端是使用代理服务器访问它们的。</li>
+</ul>
+<h3 id="PHP实现"><a href="#PHP实现" class="headerlink" title="PHP实现"></a>PHP实现</h3><pre><code class="php">/**
+ * 获取客户端真实ip
+ */   
+ function getClientIP() {
+     $ip = &quot;unknown&quot;;
+     /*
+      * 访问时用localhost访问的，读出来的是“::1”是正常情况。
+      * ：：1说明开启了ipv6支持,这是ipv6下的本地回环地址的表示。
+      * 使用ip地址访问或者关闭ipv6支持都可以不显示这个。
+      * */
+    if (isset($_SERVER)) {
+        if (isset($_SERVER[&quot;HTTP_X_FORWARDED_FOR&quot;])) {
+            $ip = $_SERVER[&quot;HTTP_X_FORWARDED_FOR&quot;];
+        } elseif (isset($_SERVER[&quot;HTTP_CLIENT_ip&quot;])) {
+            $ip = $_SERVER[&quot;HTTP_CLIENT_ip&quot;];
+        } else {
+            $ip = $_SERVER[&quot;REMOTE_ADDR&quot;];
+        }
+    } else {
+        if (getenv(&#39;HTTP_X_FORWARDED_FOR&#39;)) {
+            $ip = getenv(&#39;HTTP_X_FORWARDED_FOR&#39;);
+        } elseif (getenv(&#39;HTTP_CLIENT_ip&#39;)) {
+            $ip = getenv(&#39;HTTP_CLIENT_ip&#39;);
+        } else {
+            $ip = getenv(&#39;REMOTE_ADDR&#39;);
         }
     }
-
-    /**
-     * 设置session
-     * @param $id
-     * @param $data
-     * @return bool
-     */
-    public function write($id, $data)
-    {
-        if($this-&gt;redis-&gt;set($id, $data)) {
-            $this-&gt;redis-&gt;expire($id, $this-&gt;expire_time);
-            return true;
-        }
-        return false;
+    if(trim($ip)==&quot;::1&quot;){
+        $ip=&quot;127.0.0.1&quot;;
     }
-
-    /**
-     * 销毁session
-     * @param $id
-     * @return bool
-     */
-    public function destroy($id)
-    {
-        if($this-&gt;redis-&gt;delete($id)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * gc回收
-     * @return bool
-     */
-    public function gc(){
-        return true;
-    }
-
-    public function __destruct(){
-        session_write_close();
-    }
-
+    return $ip;
 }
 </code></pre>
-<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><h5 id="存储session（set-php）"><a href="#存储session（set-php）" class="headerlink" title="存储session（set.php）"></a>存储session（set.php）</h5><pre><code class="php">include(&#39;test.php&#39;);
-new SessionManager();
-$_SESSION[&#39;a&#39;] = &#39;b&#39;;
-</code></pre>
-<h5 id="使用session（get-php）"><a href="#使用session（get-php）" class="headerlink" title="使用session（get.php）"></a>使用session（get.php）</h5><pre><code class="php">include(&#39;test.php&#39;);
-new SessionManager();
-echo $_SESSION[&#39;a&#39;];
-</code></pre>
-
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3>
             
         </section>
         <footer class="blog-post-page-tags">
         
 			
 				
-			<a href="/tags/php/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">php</a>
+			<a href="/tags/nginx/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">nginx</a>
 				
-			<a href="/tags/redis/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">redis</a>
+			<a href="/tags/反向代理/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">反向代理</a>
 				
-			<a href="/tags/session/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">session</a>
+			<a href="/tags/PHP/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">PHP</a>
+				
+			<a href="/tags/IP/" rel="tag" data-toggle="tooltip" data-placement="top" title="Linux">IP</a>
 				
 			
 		
@@ -271,10 +207,10 @@ echo $_SESSION[&#39;a&#39;];
     	
     	
 		
-			<a href="/2019/05/29/ysfh/" class="blog-post-page-readmore-prev" data-toggle="tooltip" data-placement="top" title="约瑟夫环问题">上一篇</a>
-		
 
 		
+		
+			<a href="/2019/05/29/ysfh/" class="blog-post-page-readmore-next" data-toggle="tooltip" data-placement="top" title="约瑟夫环问题">下一篇</a>
 		
 
         <div style="clear: both;"></div>
@@ -377,7 +313,7 @@ echo $_SESSION[&#39;a&#39;];
                 return out;
             }
             // 生成
-            var qrcode= $('.post-qrcode-content-canvas').qrcode({width: 150,height: 150,text: toUtf8("http://blog.icaohui.top/2019/05/29/php-redis-session/")}).hide();
+            var qrcode= $('.post-qrcode-content-canvas').qrcode({width: 150,height: 150,text: toUtf8("http://blog.icaohui.top/2019/06/13/nginxip/")}).hide();
             var canvas=qrcode.find('canvas').get(0);
             $('.post-qrcode-content-img').attr('src',canvas.toDataURL('image/jpg'));
         </script>
